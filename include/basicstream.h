@@ -40,7 +40,7 @@ class BasicStream {
     kOut = 1L << 2
   };
 
-  enum State : std::uint8_t { kOk = 0, kFail = 1 };
+  enum State : std::uint8_t { kOk = 0, kFail = 1, kEof };
 
   BasicStream() : mState(kOk), mOpenMode(kNone), mOpen(false) {}
   BasicStream(OpenMode mode) : mOpenMode(mode), mState(kOk), mOpen(false) {}

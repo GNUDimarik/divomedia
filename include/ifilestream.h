@@ -32,10 +32,13 @@ class IFileStream : public BasicStream {
  public:
   IFileStream(const std::string& fileName, OpenMode mode,
               const std::string& inputFormat = std::string());
-  virtual IFileStream& operator>>(std::shared_ptr<AVFrame>& frame) override;
   virtual IFileStream& operator>>(std::shared_ptr<AVPacket>& packet) override;
 
  private:
+  IFileStream& operator>>(std::shared_ptr<AVFrame>& frame) override {
+    return *this;
+  }
+
   virtual IFileStream& operator<<(
       const std::shared_ptr<AVFrame>& frame) override {
     return *this;

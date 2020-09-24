@@ -76,10 +76,17 @@ IFileStream::IFileStream(const std::string& fileName, OpenMode mode,
   }
 }
 
-IFileStream& IFileStream::operator>>(std::shared_ptr<AVFrame>& frame) {
-  return *this;
-}
-
 IFileStream& IFileStream::operator>>(std::shared_ptr<AVPacket>& packet) {
+  if (isOpen()) {
+    int ret = av_read_frame(mSpFormatCtx.get(), packet.get());
+
+    if (ret < 0) {
+      if (ret == AVERROR_EOF) {
+        setState(kEof);
+      } else {
+        setState(kFail);
+      }
+    }
+  }
   return *this;
 }
