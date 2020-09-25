@@ -18,7 +18,11 @@
 #ifndef PIXELFORMAT_H
 #define PIXELFORMAT_H
 
+#if __has_include(<features.h>)
 #include <features.h>
+#else
+#include <utils/utils.h>
+#endif
 
 __BEGIN_DECLS
 #include <libavutil/pixdesc.h>
