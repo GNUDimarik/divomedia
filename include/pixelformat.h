@@ -21,7 +21,7 @@
 #if __has_include(<features.h>)
 #include <features.h>
 #else
-#include <utils/utils.h>
+#include <config.h>
 #endif
 
 __BEGIN_DECLS
