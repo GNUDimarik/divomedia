@@ -49,7 +49,7 @@
 #endif
 
 #ifndef __END_DECLS
-#define __BEGIN_DECLS }
+#define __END_DECLS }
 #endif
 
 #define FF_SUCCESSFUL(code) (code == 0)
