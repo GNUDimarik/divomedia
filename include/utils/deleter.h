@@ -80,7 +80,7 @@ class Deleter<AVCodecContext> {
   static std::function<void(AVCodecContext*)> create() {
     return std::function<void(AVCodecContext*)>([](AVCodecContext* ctx) {
       if (ctx) {
-        avcodec_close(ctx);
+        avcodec_free_context(&ctx);
         ctx = nullptr;
       }
     });
@@ -171,6 +171,20 @@ class Deleter<AVInputFormat> {
  public:
   static std::function<void(AVInputFormat*)> create() {
     return std::function<void(AVInputFormat*)>([](AVInputFormat* ctx) {});
+  }
+};
+
+template <>
+class Deleter<AVCodecParserContext> {
+ public:
+  static std::function<void(AVCodecParserContext*)> create() {
+    return std::function<void(AVCodecParserContext*)>(
+        [](AVCodecParserContext* ctx) {
+          if (ctx) {
+            av_parser_close(ctx);
+            ctx = nullptr;
+          }
+        });
   }
 };
 }  // namespace utils

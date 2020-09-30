@@ -92,3 +92,10 @@ TEST(deleter, _SwrContext) {
   bool val = std::is_same<decltype(deleter), decltype(func)>::value;
   ASSERT_TRUE(val);
 }
+
+TEST(deleter, _AVCodecParserContext) {
+  std::function<void(AVCodecParserContext*)> func([](AVCodecParserContext*) {});
+  auto deleter = Deleter<AVCodecParserContext>::create();
+  bool val = std::is_same<decltype(deleter), decltype(func)>::value;
+  ASSERT_TRUE(val);
+}
