@@ -92,6 +92,8 @@ class Utils {
   static std::vector<std::string> availableFilters();
   static std::shared_ptr<AVDictionary> optionsToDict(
       const std::unordered_map<std::string, std::string> &opt);
+  static std::shared_ptr<AVPacket> createEmptyPacket();
+  static std::shared_ptr<AVFrame> createEmptyFrame();
 };
 
 }  // namespace utils

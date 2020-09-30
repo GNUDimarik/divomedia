@@ -52,7 +52,7 @@
 #define __END_DECLS }
 #endif
 
-#define FF_SUCCESSFUL(code) (code == 0)
+#define FF_SUCCESSFUL(code) (code >= 0)
 #define FF_FAILED(code) (code != 0)
 
 #endif  // CONFIG_H

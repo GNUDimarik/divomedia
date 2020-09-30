@@ -67,8 +67,8 @@ class Deleter<AVPacket> {
   static std::function<void(AVPacket*)> create() {
     return std::function<void(AVPacket*)>([](AVPacket* packet) {
       if (packet) {
-        av_packet_unref(packet);
-        delete packet;
+        av_packet_free(&packet);
+        packet = nullptr;
       }
     });
   }
