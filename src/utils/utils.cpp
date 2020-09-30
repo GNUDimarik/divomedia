@@ -21,7 +21,6 @@
 #include <utils/utils.h>
 #include <algorithm>
 #include <cstring>
-#include <iostream>
 
 __BEGIN_DECLS
 #include <libavcodec/avcodec.h>
@@ -131,4 +130,13 @@ std::shared_ptr<AVDictionary> Utils::optionsToDict(
 
   return std::move(
       std::shared_ptr<AVDictionary>(dict, Deleter<AVDictionary>::create()));
+}
+
+std::shared_ptr<AVPacket> Utils::createEmptyPacket() {
+  return std::shared_ptr<AVPacket>(av_packet_alloc(),
+                                   Deleter<AVPacket>::create());
+}
+
+std::shared_ptr<AVFrame> Utils::createEmptyFrame() {
+  return std::shared_ptr<AVFrame>(av_frame_alloc(), Deleter<AVFrame>::create());
 }

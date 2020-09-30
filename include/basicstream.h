@@ -43,7 +43,7 @@ class BasicStream {
   enum State : std::uint8_t { kOk = 0, kFail = 1, kEof };
 
   BasicStream() : mState(kOk), mOpenMode(kNone), mOpen(false) {}
-  BasicStream(OpenMode mode) : mOpenMode(mode), mState(kOk), mOpen(false) {}
+  BasicStream(OpenMode mode) : mOpenMode(mode), mState(kFail), mOpen(false) {}
   bool isOpen() const { return mOpen; }
   State state() const { return mState; }
   bool isOk() const { return mState == kOk; }

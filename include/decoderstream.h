@@ -28,7 +28,7 @@ namespace divomedia {
 
 class DecoderStream : public BasicStream {
  public:
-  DecoderStream();
+  DecoderStream(AVStream* stream);
 
   bool open(AVCodecID decoder, bool openParser = true);
   virtual BasicStream& operator<<(

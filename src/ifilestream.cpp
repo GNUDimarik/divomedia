@@ -36,43 +36,39 @@ IFileStream::IFileStream(const std::string& fileName, OpenMode mode,
 
     if (!mSpInputFormat) {
       LOGE("Could not find input format '%s'", mInputFormat.c_str());
-      setState(kFail);
     }
   }
 
-  if (isOk()) {
-    AVFormatContext* ctx = avformat_alloc_context();
+  AVFormatContext* ctx = avformat_alloc_context();
 
-    if (ctx) {
-      std::shared_ptr<AVDictionary> dict = optionsDictionary();
-      AVDictionary* avDict = dict.get();
-      int ret = avformat_open_input(&ctx, mFileName.c_str(),
-                                    mSpInputFormat.get(), &avDict);
+  if (ctx) {
+    std::shared_ptr<AVDictionary> dict = optionsDictionary();
+    AVDictionary* avDict = dict.get();
+    int ret = avformat_open_input(&ctx, mFileName.c_str(), mSpInputFormat.get(),
+                                  &avDict);
+
+    if (FF_SUCCESSFUL(ret)) {
+      // wrap AVFormatContext here since avformat_open_input calls
+      // avformat_free_context if it fails and doesn't set pointer to nullptr
+      // and then we crash in deleter
+      mSpFormatCtx.reset(ctx, Deleter<AVFormatContext>::create());
+      ret = avformat_find_stream_info(ctx, &avDict);
 
       if (FF_SUCCESSFUL(ret)) {
-        // wrap AVFormatContext here since avformat_open_input calls
-        // avformat_free_context if it fails and doesn't set pointer to nullptr
-        // and then we crash in deleter
-        mSpFormatCtx.reset(ctx, Deleter<AVFormatContext>::create());
-        ret = avformat_find_stream_info(ctx, &avDict);
-
-        if (FF_SUCCESSFUL(ret)) {
-          // Success
-          LOGD("Successfully opened '%s'\n", mFileName.c_str());
-        } else {
-          setState(kFail);
-          LOGE("Could not find stream info for '%s' error: '%s'\n",
-               mFileName.c_str(), Utils::avErrorToString(ret).c_str());
-        }
+        // Success
+        setState(kOk);
+        setOpen(true);
+        LOGD("Successfully opened '%s'\n", mFileName.c_str());
       } else {
-        setState(kFail);
-        LOGE("Could not open '%s' error: '%s'\n", mFileName.c_str(),
-             Utils::avErrorToString(ret).c_str());
+        LOGE("Could not find stream info for '%s' error: '%s'\n",
+             mFileName.c_str(), Utils::avErrorToString(ret).c_str());
       }
     } else {
-      setState(kFail);
-      LOGE("Could not intialize AVFormatContext\n");
+      LOGE("Could not open '%s' error: '%s'\n", mFileName.c_str(),
+           Utils::avErrorToString(ret).c_str());
     }
+  } else {
+    LOGE("Could not intialize AVFormatContext\n");
   }
 }
 
@@ -96,10 +92,10 @@ unsigned int IFileStream::streamsNumber() const {
     if (mSpFormatCtx) {
       return mSpFormatCtx->nb_streams;
     } else {
-      LOGE("Input stream is not initialized");
+      LOGE("Input stream is not initialized\n");
     }
   } else {
-    LOGE("Input stream is not open");
+    LOGE("Input stream is not open\n");
   }
 
   return 0;
@@ -111,13 +107,13 @@ AVStream* IFileStream::stream(unsigned int index) const {
       if (index >= 0 && index < mSpFormatCtx->nb_streams) {
         return mSpFormatCtx->streams[index];
       } else {
-        LOGE("index %u out of range", index);
+        LOGE("index %u out of range\n", index);
       }
     } else {
-      LOGE("Input stream is not initialized");
+      LOGE("Input stream is not initialized\n");
     }
   } else {
-    LOGE("Input stream is not open");
+    LOGE("Input stream is not open\n");
   }
 
   return nullptr;

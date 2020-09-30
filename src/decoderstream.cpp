@@ -18,11 +18,19 @@
 #include <decoderstream.h>
 #include <utils/deleter.h>
 #include <utils/log.h>
+#include <stdexcept>
 
 using namespace divomedia;
 using namespace divomedia::utils;
 
-DecoderStream::DecoderStream() : BasicStream(kIn) {}
+DecoderStream::DecoderStream(AVStream* stream) : BasicStream(kIn) {
+  if (stream != nullptr) {
+    open(stream->codecpar->codec_id,
+         stream->codecpar->codec_type != AVMEDIA_TYPE_AUDIO);
+  } else {
+    LOGE("Input stream is NULL");
+  }
+}
 
 bool DecoderStream::open(AVCodecID decoder, bool openParser) {
   AVCodec* codec = avcodec_find_decoder(decoder);
@@ -69,9 +77,9 @@ bool DecoderStream::open(AVCodecID decoder, bool openParser) {
 BasicStream& DecoderStream::operator<<(const std::shared_ptr<AVPacket>& pkt) {
   if (isOpen()) {
     int ret = avcodec_send_packet(mSpCodecContext.get(), pkt.get());
+    setState(ret >= 0 ? kOk : kFail);
 
     if (ret < 0) {
-      setState(kFail);
       LOGE("Could not send paket to codec. Error: '%s'\n",
            Utils::avErrorToString(AVERROR(ret)).c_str());
     }
@@ -82,14 +90,17 @@ BasicStream& DecoderStream::operator<<(const std::shared_ptr<AVPacket>& pkt) {
 BasicStream& DecoderStream::operator>>(std::shared_ptr<AVFrame>& frame) {
   if (isOpen()) {
     int ret = 0;
+    setState(kOk);
+
     while (ret >= 0) {
       ret = avcodec_receive_frame(mSpCodecContext.get(), frame.get());
       if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-        setState(kOk);
+        break;
       } else if (ret < 0) {
+        setState(kFail);
         LOGE("Error during decoding. Error '%s'\n",
              Utils::avErrorToString(AVERROR(ret)).c_str());
-        setState(kFail);
+        break;
       }
     }
   }
