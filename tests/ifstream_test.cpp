@@ -18,16 +18,27 @@
 
 #include <config.h>
 #include <ifilestream.h>
+#include <memory>
 #include "gtest/gtest.h"
 
 using namespace divomedia;
 
+// This code refactored for using exceptions. So may be test should be rewritten
+
 TEST(ifilestream, file_not_found_is_fail) {
-  IFileStream istream("file not found", IFileStream::kIn);
-  ASSERT_TRUE(istream.isFail());
+  try {
+    IFileStream istream("file not found", IFileStream::kIn);
+    ASSERT_TRUE(istream.isFail());
+  } catch (const std::exception &e) {
+    ASSERT_TRUE(!std::string(e.what()).empty());
+  }
 }
 
 TEST(ifilestream, file_not_found_is_not_ok) {
-  IFileStream istream("file not found", IFileStream::kIn);
-  ASSERT_FALSE(istream.isOk());
+  try {
+    IFileStream istream("file not found", IFileStream::kIn);
+    ASSERT_FALSE(istream.isOk());
+  } catch (const std::exception &e) {
+    ASSERT_TRUE(!std::string(e.what()).empty());
+  }
 }

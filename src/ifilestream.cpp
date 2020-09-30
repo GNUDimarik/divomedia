@@ -19,6 +19,7 @@
 #include <utils/deleter.h>
 #include <utils/log.h>
 #include <utils/utils.h>
+#include <stdexcept>
 
 __BEGIN_DECLS
 #include <libavformat/avformat.h>
@@ -35,8 +36,9 @@ IFileStream::IFileStream(const std::string& fileName, OpenMode mode,
                          Deleter<AVInputFormat>::create());
 
     if (!mSpInputFormat) {
-      LOGE("Could not find input format '%s'", mInputFormat.c_str());
       setState(kFail);
+      throw std::runtime_error("Could not find input format '" + mInputFormat +
+                               "'");
     }
   }
 
@@ -61,17 +63,18 @@ IFileStream::IFileStream(const std::string& fileName, OpenMode mode,
           LOGD("Successfully opened '%s'\n", mFileName.c_str());
         } else {
           setState(kFail);
-          LOGE("Could not find stream info for '%s' error: '%s'\n",
-               mFileName.c_str(), Utils::avErrorToString(ret).c_str());
+          throw std::runtime_error("Could not find stream info for '" +
+                                   mFileName + "' error: '" +
+                                   Utils::avErrorToString(ret) + "'");
         }
       } else {
         setState(kFail);
-        LOGE("Could not open '%s' error: '%s'\n", mFileName.c_str(),
-             Utils::avErrorToString(ret).c_str());
+        throw std::runtime_error("Could not open '" + mFileName + "' error: '" +
+                                 Utils::avErrorToString(ret) + "'");
       }
     } else {
       setState(kFail);
-      LOGE("Could not intialize AVFormatContext\n");
+      throw std::runtime_error("Could not intialize AVFormatContext");
     }
   }
 }
@@ -89,4 +92,32 @@ IFileStream& IFileStream::operator>>(std::shared_ptr<AVPacket>& packet) {
     }
   }
   return *this;
+}
+
+unsigned int IFileStream::streamsNumber() const {
+  if (isOpen()) {
+    if (mSpFormatCtx) {
+      return mSpFormatCtx->nb_streams;
+    }
+
+    throw std::runtime_error("Input stream is not initialized");
+  }
+
+  throw std::runtime_error("Input stream is not open");
+}
+
+AVStream* IFileStream::stream(unsigned int index) const {
+  if (isOpen()) {
+    if (mSpFormatCtx) {
+      if (index >= 0 && index < mSpFormatCtx->nb_streams) {
+        return mSpFormatCtx->streams[index];
+      }
+      throw std::out_of_range("index " + std::to_string(index) +
+                              " out of range");
+    }
+
+    throw std::runtime_error("Input stream is not initialized");
+  }
+
+  throw std::runtime_error("Input stream is not open");
 }
