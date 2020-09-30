@@ -1,5 +1,5 @@
 /*****************************************************************************
- * StringUtils.h
+ * stringutils.h
  *
  * Created: 11.09.2020 2020 by Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
