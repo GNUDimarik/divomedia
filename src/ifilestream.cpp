@@ -90,3 +90,35 @@ IFileStream& IFileStream::operator>>(std::shared_ptr<AVPacket>& packet) {
   }
   return *this;
 }
+
+unsigned int IFileStream::streamsNumber() const {
+  if (isOpen()) {
+    if (mSpFormatCtx) {
+      return mSpFormatCtx->nb_streams;
+    } else {
+      LOGE("Input stream is not initialized");
+    }
+  } else {
+    LOGE("Input stream is not open");
+  }
+
+  return 0;
+}
+
+AVStream* IFileStream::stream(unsigned int index) const {
+  if (isOpen()) {
+    if (mSpFormatCtx) {
+      if (index >= 0 && index < mSpFormatCtx->nb_streams) {
+        return mSpFormatCtx->streams[index];
+      } else {
+        LOGE("index %u out of range", index);
+      }
+    } else {
+      LOGE("Input stream is not initialized");
+    }
+  } else {
+    LOGE("Input stream is not open");
+  }
+
+  return nullptr;
+}
