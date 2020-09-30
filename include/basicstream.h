@@ -52,6 +52,8 @@ class BasicStream {
     mOptions[key] = val;
   }
 
+  void close() { setOpen(false); }
+
   const std::string& getOption(
       const std::string& key, const std::string& defaultValue = std::string()) {
     const auto& searchResult = mOptions.find(key);
@@ -69,7 +71,7 @@ class BasicStream {
 
  protected:
   void setState(State state) { mState = state; }
-  void setOpen(bool open) { mOpen = open; }
+  virtual void setOpen(bool open) { mOpen = open; }
   std::shared_ptr<AVDictionary> optionsDictionary() const {
     return utils::Utils::optionsToDict(mOptions);
   }

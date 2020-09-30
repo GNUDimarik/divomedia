@@ -24,9 +24,16 @@ __BEGIN_DECLS
 #include <libavutil/log.h>
 __END_DECLS
 
+#ifndef __ANDROID__
 #ifndef LOGD
 #define LOGD(...) av_log(nullptr, AV_LOG_DEBUG, __VA_ARGS__)
+#endif
+
+#ifndef LOGE
 #define LOGE(...) av_log(nullptr, AV_LOG_ERROR, __VA_ARGS__)
+#endif
+#else
+#error "Define android log!"
 #endif
 
 #endif  // LOG_H
