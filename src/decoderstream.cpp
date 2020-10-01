@@ -74,7 +74,7 @@ bool DecoderStream::open(AVCodecID decoder, bool openParser) {
   return false;
 }
 
-BasicStream& DecoderStream::operator<<(const std::shared_ptr<AVPacket>& pkt) {
+DecoderStream& DecoderStream::operator<<(const std::shared_ptr<AVPacket>& pkt) {
   if (isOpen()) {
     int ret = avcodec_send_packet(mSpCodecContext.get(), pkt.get());
     setState(ret >= 0 ? kOk : kFail);
@@ -87,7 +87,7 @@ BasicStream& DecoderStream::operator<<(const std::shared_ptr<AVPacket>& pkt) {
   return *this;
 }
 
-BasicStream& DecoderStream::operator>>(std::shared_ptr<AVFrame>& frame) {
+DecoderStream& DecoderStream::operator>>(std::shared_ptr<AVFrame>& frame) {
   if (isOpen()) {
     int ret = 0;
     setState(kOk);
