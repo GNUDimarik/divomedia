@@ -1,7 +1,7 @@
 /*****************************************************************************
- * decoderstream.h
+ * encoderstream.h
  *
- * Created: 29.09.2020 2020 by Dmitry Adzhiev <dmitry.adjiev@gmail.com>
+ * Created: 02.10.2020 2020 by Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
  * Copyright 2020 Dmitry Adzhiev <dmitry.adjiev@gmail.com>. All rights reserved.
  *
@@ -15,39 +15,33 @@
  * contact the author of this file, or the owner of the project in which
  * this file belongs to.
  *****************************************************************************/
-#ifndef DECODERSTREAM_H
-#define DECODERSTREAM_H
+#ifndef ENCODERSTREAM_H
+#define ENCODERSTREAM_H
 
 #include <basicstream.h>
 
-__BEGIN_DECLS
-#include <libavcodec/avcodec.h>
-__END_DECLS
-
 namespace divomedia {
 
-class DecoderStream : public BasicStream {
+class EncoderStream : public BasicStream {
  public:
-  DecoderStream(AVStream* stream = nullptr);
-
-  bool open(AVCodecID decoder, bool openParser = true);
-  virtual DecoderStream& operator<<(
-      const std::shared_ptr<AVPacket>& pkt) override;
-  virtual DecoderStream& operator>>(std::shared_ptr<AVFrame>& frame) override;
+  EncoderStream(AVCodecID encoder = AV_CODEC_ID_NONE);
+  bool open(AVCodecID encoder);
+  AVCodecContext* avCodecContext() const;
+  virtual EncoderStream& operator<<(
+      const std::shared_ptr<AVFrame>& frame) override;
+  virtual EncoderStream& operator>>(std::shared_ptr<AVPacket>& pkt) override;
 
  private:
-  virtual DecoderStream& operator<<(const std::shared_ptr<AVFrame>&) override {
+  virtual EncoderStream& operator<<(
+      const std::shared_ptr<AVPacket>& pkt) override {
     return *this;
   }
-
-  virtual DecoderStream& operator>>(std::shared_ptr<AVPacket>&) override {
+  virtual EncoderStream& operator>>(std::shared_ptr<AVFrame>& frame) override {
     return *this;
   }
-
   std::shared_ptr<AVCodecContext> mSpCodecContext;
-  std::shared_ptr<AVCodecParserContext> mSpParserContext;
 };
 
 }  // namespace divomedia
 
-#endif  // DECODERSTREAM_H
+#endif  // ENCODERSTREAM_H

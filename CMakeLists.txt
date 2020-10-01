@@ -17,12 +17,14 @@ add_library(${PROJECT_NAME}
   "src/main.cpp"
   "src/ifilestream.cpp"
   "src/decoderstream.cpp"
+  "src/encoderstream.cpp"
   "include/pixelformat.h"
   "include/size.h"
   "include/divomedia.h"
   "include/basicstream.h"
   "include/ifilestream.h"
   "include/decoderstream.h"
+  "include/encoderstream.h"
   "include/utils/deleter.h"
   "include/utils/log.h")
 
