@@ -94,6 +94,11 @@ DecoderStream& DecoderStream::operator>>(Frame& frame) {
 
     while (ret >= 0) {
       ret = avcodec_receive_frame(mSpCodecContext.get(), frame.avFrame());
+
+      if (ret >= 0) {
+        return *this;
+      }
+
       if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
         break;
       } else if (ret < 0) {
