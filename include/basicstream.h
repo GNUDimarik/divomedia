@@ -19,6 +19,7 @@
 #define BASICSTREAM_H
 
 #include <config.h>
+#include <frame.h>
 #include <utils/log.h>
 #include <utils/utils.h>
 #include <cstdint>
@@ -61,11 +62,9 @@ class BasicStream {
     return searchResult == mOptions.end() ? defaultValue : searchResult->second;
   }
 
-  virtual BasicStream& operator>>(std::shared_ptr<AVFrame>&) { return *this; }
+  virtual BasicStream& operator>>(Frame&) { return *this; }
   virtual BasicStream& operator>>(std::shared_ptr<AVPacket>&) { return *this; }
-  virtual BasicStream& operator<<(const std::shared_ptr<AVFrame>&) {
-    return *this;
-  }
+  virtual BasicStream& operator<<(const Frame&) { return *this; }
   virtual BasicStream& operator<<(const std::shared_ptr<AVPacket>&) {
     return *this;
   }

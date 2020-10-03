@@ -81,10 +81,9 @@ AVCodecContext* EncoderStream::avCodecContext() const {
   return mSpCodecContext.get();
 }
 
-EncoderStream& EncoderStream::operator<<(
-    const std::shared_ptr<AVFrame>& frame) {
+EncoderStream& EncoderStream::operator<<(const Frame& frame) {
   if (isOpen()) {
-    int ret = avcodec_send_frame(mSpCodecContext.get(), frame.get());
+    int ret = avcodec_send_frame(mSpCodecContext.get(), frame.avFrame());
     setState(ret >= 0 ? kOk : kFail);
 
     if (ret < 0) {

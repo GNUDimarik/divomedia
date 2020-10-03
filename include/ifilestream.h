@@ -37,14 +37,9 @@ class IFileStream : public BasicStream {
   AVStream* stream(unsigned int index) const;
 
  private:
-  IFileStream& operator>>(std::shared_ptr<AVFrame>& frame) override {
-    return *this;
-  }
+  IFileStream& operator>>(Frame& frame) override { return *this; }
 
-  virtual IFileStream& operator<<(
-      const std::shared_ptr<AVFrame>& frame) override {
-    return *this;
-  }
+  virtual IFileStream& operator<<(const Frame& frame) override { return *this; }
   virtual IFileStream& operator<<(
       const std::shared_ptr<AVPacket>& packet) override {
     return *this;

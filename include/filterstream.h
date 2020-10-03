@@ -19,6 +19,7 @@
 #define FILTERSTREAM_H
 
 #include <basicstream.h>
+#include <buffersource.h>
 #include <filter.h>
 
 __BEGIN_DECLS
@@ -35,16 +36,21 @@ class FilterStream : BasicStream {
 
   FilterStream(const std::string& description = std::string(),
                Kind kind = kNone);
-  virtual FilterStream& operator>>(std::shared_ptr<AVFrame>& frame);
-  virtual FilterStream& operator<<(const std::shared_ptr<AVFrame>& frame);
+  BufferSource createBufferSource(
+      const std::string& bufferSource,
+      const std::string& objectName = std::string());
+  virtual FilterStream& operator>>(Frame& frame) override;
+  virtual FilterStream& operator<<(const Frame& frame) override;
   Filter createFilter(const std::string& filterName,
                       const std::string& objectName = std::string()) const;
   bool validate() const;
   bool initializeFromDescription(const std::string& description, Kind kind);
 
  private:
-  virtual FilterStream& operator>>(std::shared_ptr<AVPacket>&) { return *this; }
-  virtual FilterStream& operator<<(const std::shared_ptr<AVPacket>&) {
+  virtual FilterStream& operator>>(std::shared_ptr<AVPacket>&) override {
+    return *this;
+  }
+  virtual FilterStream& operator<<(const std::shared_ptr<AVPacket>&) override {
     return *this;
   }
 

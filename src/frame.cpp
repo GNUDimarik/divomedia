@@ -1,5 +1,5 @@
 /*****************************************************************************
- * buffersource.h
+ * frame.cpp
  *
  * Created: 03.10.2020 2020 by Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -15,27 +15,38 @@
  * contact the author of this file, or the owner of the project in which
  * this file belongs to.
  *****************************************************************************/
-#ifndef BUFFERSOURCE_H
-#define BUFFERSOURCE_H
-
-#include <filter.h>
 #include <frame.h>
+#include <utils/deleter.h>
 
-__BEGIN_DECLS
-#include <libavformat/avformat.h>
-__END_DECLS
+using namespace divomedia;
+using namespace divomedia::utils;
 
-#include <memory>
+Frame::Frame() : mSpFrame(Utils::createEmptyFrame()) {}
 
-namespace divomedia {
+Frame::Frame(AVFrame* frame)
+    : mSpFrame(std::shared_ptr<AVFrame>(frame, Deleter<AVFrame>::create())) {}
 
-class BufferSource : public Filter {
- public:
-  BufferSource(AVFilterContext *ctx = nullptr);
-  bool add(const Frame &frame, int flags = 0);
-  bool write(const Frame &frame);
-};
+Frame::Frame(Frame&& other) noexcept { mSpFrame.swap(other.mSpFrame); }
 
-}  // namespace divomedia
+AVFrame* Frame::avFrame() const { return mSpFrame.get(); }
 
-#endif  // BUFFERSOURCE_H
+void Frame::unref() const {
+  if (mSpFrame) {
+    av_frame_unref(mSpFrame.get());
+  }
+}
+
+Frame& Frame::operator=(Frame&& frame) noexcept {
+  if (mSpFrame != frame.mSpFrame) {
+    mSpFrame.swap(frame.mSpFrame);
+  }
+  return *this;
+}
+
+Frame Frame::clone() {
+  if (mSpFrame) {
+    return Frame(av_frame_clone(mSpFrame.get()));
+  }
+
+  return Frame(nullptr);
+}

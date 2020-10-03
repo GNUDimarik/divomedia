@@ -21,6 +21,8 @@ add_library(${PROJECT_NAME}
   "src/filterstream.cpp"
   "src/filter.cpp"
   "src/buffersource.cpp"
+  "src/buffersink.cpp"
+  "src/frame.cpp"
   "include/pixelformat.h"
   "include/size.h"
   "include/divomedia.h"
@@ -30,7 +32,9 @@ add_library(${PROJECT_NAME}
   "include/encoderstream.h"
   "include/filterstream.h"
   "include/filter.h"
+  "include/frame.h"
   "include/buffersource.h"
+  "include/buffersink.h"
   "include/utils/deleter.h"
   "include/utils/log.h")
 

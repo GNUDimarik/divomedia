@@ -1,7 +1,7 @@
 /*****************************************************************************
- * encoderstream.h
+ * buffersink.h
  *
- * Created: 02.10.2020 2020 by Dmitry Adzhiev <dmitry.adjiev@gmail.com>
+ * Created: 03.10.2020 2020 by Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
  * Copyright 2020 Dmitry Adzhiev <dmitry.adjiev@gmail.com>. All rights reserved.
  *
@@ -15,30 +15,21 @@
  * contact the author of this file, or the owner of the project in which
  * this file belongs to.
  *****************************************************************************/
-#ifndef ENCODERSTREAM_H
-#define ENCODERSTREAM_H
+#ifndef BUFFERSINK_H
+#define BUFFERSINK_H
 
-#include <basicstream.h>
+#include <filter.h>
+#include <frame.h>
+
+/// TODO: Implement more interface functions
 
 namespace divomedia {
 
-class EncoderStream : public BasicStream {
+class BufferSink : public Filter {
  public:
-  EncoderStream(AVCodecID encoder = AV_CODEC_ID_NONE);
-  bool open(AVCodecID encoder);
-  AVCodecContext* avCodecContext() const;
-  virtual EncoderStream& operator<<(const Frame& frame) override;
-  virtual EncoderStream& operator>>(std::shared_ptr<AVPacket>& pkt) override;
-
- private:
-  virtual EncoderStream& operator<<(
-      const std::shared_ptr<AVPacket>& pkt) override {
-    return *this;
-  }
-  virtual EncoderStream& operator>>(Frame& frame) override { return *this; }
-  std::shared_ptr<AVCodecContext> mSpCodecContext;
+  BufferSink(AVFilterContext *ctx = nullptr);
+  bool getFrame(const Frame &frame) const;
 };
 
 }  // namespace divomedia
-
-#endif  // ENCODERSTREAM_H
+#endif  // BUFFERSINK_H

@@ -87,13 +87,13 @@ DecoderStream& DecoderStream::operator<<(const std::shared_ptr<AVPacket>& pkt) {
   return *this;
 }
 
-DecoderStream& DecoderStream::operator>>(std::shared_ptr<AVFrame>& frame) {
+DecoderStream& DecoderStream::operator>>(Frame& frame) {
   if (isOpen()) {
     int ret = 0;
     setState(kOk);
 
     while (ret >= 0) {
-      ret = avcodec_receive_frame(mSpCodecContext.get(), frame.get());
+      ret = avcodec_receive_frame(mSpCodecContext.get(), frame.avFrame());
       if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
         break;
       } else if (ret < 0) {

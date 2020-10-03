@@ -1,5 +1,5 @@
 /*****************************************************************************
- * buffersource.cpp
+ * buffersink.cpp
  *
  * Created: 03.10.2020 2020 by Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
@@ -15,48 +15,25 @@
  * contact the author of this file, or the owner of the project in which
  * this file belongs to.
  *****************************************************************************/
-#include <buffersource.h>
+#include <buffersink.h>
 #include <utils/log.h>
 #include <utils/utils.h>
 
 __BEGIN_DECLS
-#include <libavfilter/buffersrc.h>
+#include <libavfilter/buffersink.h>
 __END_DECLS
 
 using namespace divomedia;
 using namespace divomedia::utils;
 
-BufferSource::BufferSource(AVFilterContext *ctx) : Filter(ctx) {}
+BufferSink::BufferSink(AVFilterContext *ctx) : Filter(ctx) {}
 
-bool BufferSource::add(const Frame &frame, int flags) {
+bool BufferSink::getFrame(const Frame &frame) const {
   if (!isNull()) {
-    int ret = -1;
-
-    if (flags > 0) {
-      ret = av_buffersrc_add_frame_flags(mpContext, frame.avFrame(), flags);
-    } else {
-      ret = av_buffersrc_add_frame(mpContext, frame.avFrame());
-    }
+    int ret = av_buffersink_get_frame(mpContext, frame.avFrame());
 
     if (ret < 0) {
-      LOGE("Failed to add frame '%s'",
-           Utils::avErrorToString(AVERROR(ret)).c_str());
-    }
-
-    return ret >= 0;
-  } else {
-    LOGE("BufferSource: isn't initialized");
-  }
-
-  return false;
-}
-
-bool BufferSource::write(const Frame &frame) {
-  if (!isNull()) {
-    int ret = av_buffersrc_write_frame(mpContext, frame.avFrame());
-
-    if (ret < 0) {
-      LOGE("Failed to write frame '%s'",
+      LOGE("BufferSink: failed to get frame '%s'",
            Utils::avErrorToString(AVERROR(ret)).c_str());
     }
 

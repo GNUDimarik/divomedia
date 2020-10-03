@@ -31,13 +31,14 @@ FilterStream::FilterStream(const std::string& description, Kind kind)
   }
 }
 
-FilterStream& FilterStream::operator>>(std::shared_ptr<AVFrame>& frame) {
-  return *this;
+BufferSource FilterStream::createBufferSource(const std::string& bufferSource,
+                                              const std::string& objectName) {
+  return BufferSource(createFilter(bufferSource, objectName).avFilterContext());
 }
 
-FilterStream& FilterStream::operator<<(const std::shared_ptr<AVFrame>& frame) {
-  return *this;
-}
+FilterStream& FilterStream::operator>>(Frame& frame) { return *this; }
+
+FilterStream& FilterStream::operator<<(const Frame& frame) { return *this; }
 
 Filter FilterStream::createFilter(const std::string& filterName,
                                   const std::string& objectName) const {

@@ -33,12 +33,10 @@ class DecoderStream : public BasicStream {
   bool open(AVCodecID decoder, bool openParser = true);
   virtual DecoderStream& operator<<(
       const std::shared_ptr<AVPacket>& pkt) override;
-  virtual DecoderStream& operator>>(std::shared_ptr<AVFrame>& frame) override;
+  virtual DecoderStream& operator>>(Frame& frame) override;
 
  private:
-  virtual DecoderStream& operator<<(const std::shared_ptr<AVFrame>&) override {
-    return *this;
-  }
+  virtual DecoderStream& operator<<(const Frame&) override { return *this; }
 
   virtual DecoderStream& operator>>(std::shared_ptr<AVPacket>&) override {
     return *this;
