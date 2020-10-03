@@ -51,4 +51,17 @@ bool BufferSource::add(const std::shared_ptr<AVFrame> &frame, int flags) {
   return false;
 }
 
-bool BufferSource::write(const std::shared_ptr<AVFrame> &frame) {}
+bool BufferSource::write(const std::shared_ptr<AVFrame> &frame) {
+  if (!isNull()) {
+    int ret = av_buffersrc_write_frame(mpContext, frame.get());
+
+    if (ret < 0) {
+      LOGE("Failed to write frame '%s'",
+           Utils::avErrorToString(AVERROR(ret)).c_str());
+    }
+
+    return ret >= 0;
+  }
+
+  return false;
+}

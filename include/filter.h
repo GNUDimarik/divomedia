@@ -31,6 +31,8 @@ class Filter {
   bool link(const Filter &filter, unsigned srcPad = 0, unsigned dstPad = 0);
   bool initialize(const std::string &parameters);
   bool isNull() const { return mpContext == nullptr; }
+  AVFilterContext *avFilterContext() const { return mpContext; }
+  void invalidate() { mpContext = nullptr; }
 
  protected:
   AVFilterContext *mpContext;
