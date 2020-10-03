@@ -24,7 +24,6 @@
 
 __BEGIN_DECLS
 #include <libavcodec/avcodec.h>
-#include <libavfilter/avfilter.h>
 #include <libavutil/error.h>
 __END_DECLS
 
@@ -139,4 +138,9 @@ std::shared_ptr<AVPacket> Utils::createEmptyPacket() {
 
 std::shared_ptr<AVFrame> Utils::createEmptyFrame() {
   return std::shared_ptr<AVFrame>(av_frame_alloc(), Deleter<AVFrame>::create());
+}
+
+std::shared_ptr<AVFilterGraph> Utils::createFilterGraph() {
+  return std::shared_ptr<AVFilterGraph>(avfilter_graph_alloc(),
+                                        Deleter<AVFilterGraph>::create());
 }

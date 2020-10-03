@@ -18,6 +18,9 @@ add_library(${PROJECT_NAME}
   "src/ifilestream.cpp"
   "src/decoderstream.cpp"
   "src/encoderstream.cpp"
+  "src/filterstream.cpp"
+  "src/filter.cpp"
+  "src/buffersource.cpp"
   "include/pixelformat.h"
   "include/size.h"
   "include/divomedia.h"
@@ -25,6 +28,9 @@ add_library(${PROJECT_NAME}
   "include/ifilestream.h"
   "include/decoderstream.h"
   "include/encoderstream.h"
+  "include/filterstream.h"
+  "include/filter.h"
+  "include/buffersource.h"
   "include/utils/deleter.h"
   "include/utils/log.h")
 

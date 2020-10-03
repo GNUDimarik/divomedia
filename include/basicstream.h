@@ -37,7 +37,8 @@ class BasicStream {
   enum OpenMode : std::uint8_t {
     kNone = 1L << 0,
     kIn = 1L << 1,
-    kOut = 1L << 2
+    kOut = 1L << 2,
+    kInOut = kIn | kOut,
   };
 
   enum State : std::uint8_t { kOk = 0, kFail = 1, kEof };

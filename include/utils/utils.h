@@ -31,6 +31,7 @@ namespace fs = std::experimental::filesystem;
 
 __BEGIN_DECLS
 #include <libavcodec/avcodec.h>
+#include <libavfilter/avfilter.h>
 #include <libavutil/dict.h>
 __END_DECLS
 
@@ -94,6 +95,7 @@ class Utils {
       const std::unordered_map<std::string, std::string> &opt);
   static std::shared_ptr<AVPacket> createEmptyPacket();
   static std::shared_ptr<AVFrame> createEmptyFrame();
+  static std::shared_ptr<AVFilterGraph> createFilterGraph();
 };
 
 }  // namespace utils

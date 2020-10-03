@@ -107,6 +107,7 @@ class Deleter<AVFrame> {
   static std::function<void(AVFrame*)> create() {
     return std::function<void(AVFrame*)>([](AVFrame* frame) {
       if (frame) {
+        av_frame_unref(frame);
         av_frame_free(&frame);
         frame = nullptr;
       }
