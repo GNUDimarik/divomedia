@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(FFMPEG_ROOT "/usr/local")
 
 project(divomedia)
 set (DIVOMEDIA_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/include")
@@ -55,7 +54,7 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
-set(PLATFORM_LIBRARIES_LIST z m lzma x264 x265 m xcb xcb-shm xcb-shape xcb-xfixes asound SDL2 sndio Xv X11 Xext)
+set(PLATFORM_LIBRARIES_LIST z m lzma x264 x265 vpx opus m xcb xcb-shm xcb-shape xcb-xfixes asound SDL2 sndio Xv X11 Xext)
 endif (UNIX)
 
 add_test(${PROJECT_NAME} ${UNIT_TEST} COMMAND ${UNIT_TEST})
