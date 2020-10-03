@@ -144,3 +144,8 @@ std::shared_ptr<AVFilterGraph> Utils::createFilterGraph() {
   return std::shared_ptr<AVFilterGraph>(avfilter_graph_alloc(),
                                         Deleter<AVFilterGraph>::create());
 }
+
+std::shared_ptr<AVFilterInOut> Utils::createInOut() {
+  return std::shared_ptr<AVFilterInOut>(avfilter_inout_alloc(),
+                                        Deleter<AVFilterInOut>::create());
+}

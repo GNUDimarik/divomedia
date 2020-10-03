@@ -24,21 +24,71 @@ using namespace divomedia::utils;
 
 FilterStream::FilterStream(const std::string& description, Kind kind)
     : BasicStream(kInOut) {
+  mSpFilterGraph = Utils::createFilterGraph();
+
   if (description.empty()) {
-    mSpFilterGraph = Utils::createFilterGraph();
+    initializeSinkAndSource(kind);
   } else {
     initializeFromDescription(description, kind);
   }
 }
 
-BufferSource FilterStream::createBufferSource(const std::string& bufferSource,
-                                              const std::string& objectName) {
-  return BufferSource(createFilter(bufferSource, objectName).avFilterContext());
+void FilterStream::createBufferSource(const std::string& bufferSource,
+                                      const std::string& objectName) {
+  if (!mSpBufferSource) {
+    mSpBufferSource.reset(new BufferSource(
+        createFilter(bufferSource, objectName).avFilterContext()));
+  }
 }
 
-FilterStream& FilterStream::operator>>(Frame& frame) { return *this; }
+void FilterStream::createBufferSink(const std::string& bufferSink,
+                                    const std::string& objectName) {
+  if (!mSpBufferSink) {
+    mSpBufferSink.reset(
+        new BufferSink(createFilter(bufferSink, objectName).avFilterContext()));
+  }
+}
 
-FilterStream& FilterStream::operator<<(const Frame& frame) { return *this; }
+void FilterStream::initializeSinkAndSource(Kind kind) {
+  switch (kind) {
+    case kAudio:
+      createBufferSource("abuffersrc");
+      createBufferSink("abuffersink");
+      break;
+
+    case kVideo:
+      createBufferSource("buffersrc");
+      createBufferSink("buffersink");
+      break;
+
+    default:
+      break;
+  }
+}
+
+BufferSource* FilterStream::source() const { return mSpBufferSource.get(); }
+
+BufferSink* FilterStream::sink() const { return mSpBufferSink.get(); }
+
+FilterStream& FilterStream::operator>>(Frame& frame) {
+  setState(kFail);
+
+  if (mSpBufferSink) {
+    mSpBufferSink->getFrame(frame) ? setState(kOk) : setState(kFail);
+  }
+
+  return *this;
+}
+
+FilterStream& FilterStream::operator<<(const Frame& frame) {
+  setState(kFail);
+
+  if (mSpBufferSource) {
+    mSpBufferSource->write(frame) ? setState(kOk) : setState(kFail);
+  }
+
+  return *this;
+}
 
 Filter FilterStream::createFilter(const std::string& filterName,
                                   const std::string& objectName) const {
@@ -62,10 +112,13 @@ Filter FilterStream::createFilter(const std::string& filterName,
   return Filter();
 }
 
-bool FilterStream::validate() const {
+bool FilterStream::validate() {
   int ret = avfilter_graph_config(mSpFilterGraph.get(), nullptr);
 
-  if (ret < 0) {
+  if (ret >= 0) {
+    setOpen(false);
+    setState(kOk);
+  } else {
     LOGE("Failed graph validation. Message is '%s'",
          Utils::avErrorToString(AVERROR(ret)).c_str());
   }
@@ -74,4 +127,35 @@ bool FilterStream::validate() const {
 }
 
 bool FilterStream::initializeFromDescription(const std::string& description,
-                                             Kind kind) {}
+                                             Kind kind) {
+  initializeSinkAndSource(kind);
+
+  if (!description.empty()) {
+    AVFilterInOut* outputs = avfilter_inout_alloc();
+    AVFilterInOut* inputs = avfilter_inout_alloc();
+    outputs->name = av_strdup("in");
+    outputs->filter_ctx = mSpBufferSource->avFilterContext();
+    outputs->pad_idx = 0;
+    outputs->next = nullptr;
+
+    inputs->name = av_strdup("out");
+    inputs->filter_ctx = mSpBufferSink->avFilterContext();
+    inputs->pad_idx = 0;
+    inputs->next = nullptr;
+
+    int ret = avfilter_graph_parse_ptr(
+        mSpFilterGraph.get(), description.c_str(), &inputs, &outputs, nullptr);
+
+    if (ret < 0) {
+      LOGE("Could not initialize graph from description '%s' by error '%s'",
+           description.c_str(), Utils::avErrorToString(AVERROR(ret)).c_str());
+    }
+
+    avfilter_inout_free(&inputs);
+    avfilter_inout_free(&outputs);
+
+    return ret >= 0;
+  }
+
+  return false;
+}

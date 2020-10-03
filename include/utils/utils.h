@@ -96,6 +96,7 @@ class Utils {
   static std::shared_ptr<AVPacket> createEmptyPacket();
   static std::shared_ptr<AVFrame> createEmptyFrame();
   static std::shared_ptr<AVFilterGraph> createFilterGraph();
+  static std::shared_ptr<AVFilterInOut> createInOut();
 };
 
 }  // namespace utils

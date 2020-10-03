@@ -19,6 +19,7 @@
 #define FILTERSTREAM_H
 
 #include <basicstream.h>
+#include <buffersink.h>
 #include <buffersource.h>
 #include <filter.h>
 
@@ -36,14 +37,18 @@ class FilterStream : BasicStream {
 
   FilterStream(const std::string& description = std::string(),
                Kind kind = kNone);
-  BufferSource createBufferSource(
-      const std::string& bufferSource,
-      const std::string& objectName = std::string());
+  void createBufferSource(const std::string& bufferSource,
+                          const std::string& objectName = std::string());
+  void createBufferSink(const std::string& bufferSink,
+                        const std::string& objectName = std::string());
+  void initializeSinkAndSource(Kind kind);
+  BufferSource* source() const;
+  BufferSink* sink() const;
   virtual FilterStream& operator>>(Frame& frame) override;
   virtual FilterStream& operator<<(const Frame& frame) override;
   Filter createFilter(const std::string& filterName,
                       const std::string& objectName = std::string()) const;
-  bool validate() const;
+  bool validate();
   bool initializeFromDescription(const std::string& description, Kind kind);
 
  private:
@@ -55,6 +60,8 @@ class FilterStream : BasicStream {
   }
 
   std::shared_ptr<AVFilterGraph> mSpFilterGraph;
+  std::unique_ptr<BufferSource> mSpBufferSource;
+  std::unique_ptr<BufferSink> mSpBufferSink;
 };
 
 }  // namespace divomedia
