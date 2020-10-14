@@ -11,14 +11,16 @@ add_executable(
 target_link_libraries(
     unit_tests
     gtest_main
-    ${FFMPEG_ROOT}/lib/libavdevice.a
-    ${FFMPEG_ROOT}/lib/libavformat.a
-    ${FFMPEG_ROOT}/lib/libavfilter.a
-    ${FFMPEG_ROOT}/lib/libavcodec.a
-    ${FFMPEG_ROOT}/lib/libswresample.a
-    ${FFMPEG_ROOT}/lib/libswscale.a
-    ${FFMPEG_ROOT}/lib/libavutil.a
     divomedia
+    ${AVDEVICE_LIBRARY}
+    ${AVFORMAT_LIBRARY}
+    ${AVFFILTER_LIBRARY}
+    ${AVCODEC_LIBRARY}
+    ${SWRESAMPLE_LIBRARY}
+    ${SWSCALE_LIBRARY}
+    ${POSTPROC_LIBRARY}
+    ${AVUTIL_LIBRARY}
+    m
     )
 
 include_directories(${DIVOMEDIA_INCLUDE_PATH})

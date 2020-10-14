@@ -20,45 +20,6 @@
  * IN THE SOFTWARE.
  */
 
-#include "pixelformat.h"
+#include "image.h"
 
-#include <algorithm>
-
-using namespace divomedia;
-
-PixelFormat::PixelFormat(AVPixelFormat pixelFormat)
-    : mPixelFormat(pixelFormat) {}
-
-std::string PixelFormat::toString() const {
-  return av_get_pix_fmt_name(mPixelFormat);
-}
-
-bool PixelFormat::isNone() const { return mPixelFormat == AV_PIX_FMT_NONE; }
-
-AVPixelFormat PixelFormat::toAvPixelFormat() const { return mPixelFormat; }
-
-PixelFormat &PixelFormat::operator=(AVPixelFormat fmt) {
-  mPixelFormat = fmt;
-  return *this;
-}
-
-PixelFormat &PixelFormat::operator=(const PixelFormat &fmt) {
-  mPixelFormat = fmt.mPixelFormat;
-  return *this;
-}
-
-bool PixelFormat::operator==(const AVPixelFormat &fmt) const {
-  return mPixelFormat == fmt;
-}
-
-bool PixelFormat::operator!=(const AVPixelFormat &fmt) const {
-  return mPixelFormat != fmt;
-}
-
-bool PixelFormat::operator==(const PixelFormat &fmt) const {
-  return mPixelFormat == fmt.mPixelFormat;
-}
-
-bool PixelFormat::operator!=(PixelFormat &fmt) const {
-  return mPixelFormat != fmt.mPixelFormat;
-}
+Image::Image() {}

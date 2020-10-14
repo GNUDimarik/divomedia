@@ -31,6 +31,7 @@ namespace divomedia {
 class Frame {
  public:
   Frame();
+  Frame(std::uint8_t* data, std::size_t len);
   Frame(AVFrame* frame);
   Frame(const Frame&) = delete;
   Frame(Frame&& other) noexcept;

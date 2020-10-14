@@ -1,69 +1,63 @@
-/*****************************************************************************
- * filterstream.cpp
+/*
+ * Copyright 2020 Dmitry Adzhiev <dmitry.adjiev@gmail.com>
  *
- * Created: 03.10.2020 2020 by Dmitry Adzhiev <dmitry.adjiev@gmail.com>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Copyright 2020 Dmitry Adzhiev <dmitry.adjiev@gmail.com>. All rights reserved.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * This file may be distributed under the terms of GNU Public License version
- * 3 (GPL v3) as defined by the Free Software Foundation (FSF). A copy of the
- * license should have been included with this file, or the project in which
- * this file belongs to. You may also find the details of GPL v3 at:
- * http://www.gnu.org/licenses/gpl-3.0.txt
- *
- * If you have any questions regarding the use of this file, feel free to
- * contact the author of this file, or the owner of the project in which
- * this file belongs to.
- *****************************************************************************/
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
 #include <filterstream.h>
 #include <utils/log.h>
 #include <utils/utils.h>
 
+__BEGIN_DECLS
+#include <libavutil/opt.h>
+__END_DECLS
+
 using namespace divomedia;
 using namespace divomedia::utils;
 
-FilterStream::FilterStream(const std::string& description, Kind kind)
+FilterStream::FilterStream(const std::string& description,
+                           const std::string& srcParameters, Kind kind)
     : BasicStream(kInOut) {
   mSpFilterGraph = Utils::createFilterGraph();
 
   if (description.empty()) {
-    initializeSinkAndSource(kind);
+    std::string sourceName = kind == kVideo ? "buffer" : "abuffer";
+    std::string sinkName = kind == kVideo ? "buffersink" : "abuffersink";
+    createBufferSource(sourceName, srcParameters);
+    createBufferSink(sinkName);
   } else {
-    initializeFromDescription(description, kind);
+    initializeFromDescription(description, srcParameters, kind);
   }
 }
 
 void FilterStream::createBufferSource(const std::string& bufferSource,
-                                      const std::string& objectName) {
-  if (!mSpBufferSource) {
-    mSpBufferSource.reset(new BufferSource(
-        createFilter(bufferSource, objectName).avFilterContext()));
-  }
+                                      const std::string& objectName,
+                                      const std::string& parameters) {
+  mSpBufferSource.reset(new BufferSource(
+      createFilter(bufferSource, objectName, parameters).avFilterContext()));
 }
 
 void FilterStream::createBufferSink(const std::string& bufferSink,
-                                    const std::string& objectName) {
-  if (!mSpBufferSink) {
-    mSpBufferSink.reset(
-        new BufferSink(createFilter(bufferSink, objectName).avFilterContext()));
-  }
-}
-
-void FilterStream::initializeSinkAndSource(Kind kind) {
-  switch (kind) {
-    case kAudio:
-      createBufferSource("abuffersrc");
-      createBufferSink("abuffersink");
-      break;
-
-    case kVideo:
-      createBufferSource("buffersrc");
-      createBufferSink("buffersink");
-      break;
-
-    default:
-      break;
-  }
+                                    const std::string& objectName,
+                                    const std::string& parameters) {
+  mSpBufferSink.reset(new BufferSink(
+      createFilter(bufferSink, objectName, parameters).avFilterContext()));
 }
 
 BufferSource* FilterStream::source() const { return mSpBufferSource.get(); }
@@ -82,31 +76,35 @@ FilterStream& FilterStream::operator>>(Frame& frame) {
 
 FilterStream& FilterStream::operator<<(const Frame& frame) {
   setState(kFail);
+  frame.avFrame()->pts = frame.avFrame()->best_effort_timestamp;
 
   if (mSpBufferSource) {
-    mSpBufferSource->write(frame) ? setState(kOk) : setState(kFail);
+    mSpBufferSource->add(frame) ? setState(kOk) : setState(kFail);
   }
 
   return *this;
 }
 
 Filter FilterStream::createFilter(const std::string& filterName,
-                                  const std::string& objectName) const {
+                                  const std::string& objectName,
+                                  const std::string& parameters) const {
   AVFilterContext* filterContext = nullptr;
   const AVFilter* avFilter = avfilter_get_by_name(filterName.c_str());
 
   if (avFilter) {
-    filterContext = avfilter_graph_alloc_filter(mSpFilterGraph.get(), avFilter,
-                                                objectName.c_str());
+    int ret = avfilter_graph_create_filter(
+        &filterContext, avFilter, objectName.c_str(), parameters.c_str(),
+        nullptr, mSpFilterGraph.get());
 
-    if (filterContext) {
+    if (ret >= 0) {
       return Filter(filterContext);
     } else {
-      LOGE("Could not create filter '%s' with name '%s'", filterName.c_str(),
-           objectName.c_str());
+      LOGE("Could not create filter '%s' with name '%s' by error '%s'\n",
+           filterName.c_str(), objectName.c_str(),
+           Utils::avErrorToString(AVERROR(ret)).c_str());
     }
   } else {
-    LOGE("Could not find filter '%s'", filterName.c_str());
+    LOGE("Could not find filter '%s'\n", filterName.c_str());
   }
 
   return Filter();
@@ -119,7 +117,7 @@ bool FilterStream::validate() {
     setOpen(false);
     setState(kOk);
   } else {
-    LOGE("Failed graph validation. Message is '%s'",
+    LOGE("Failed graph validation. Message is '%s'\n",
          Utils::avErrorToString(AVERROR(ret)).c_str());
   }
 
@@ -127,10 +125,14 @@ bool FilterStream::validate() {
 }
 
 bool FilterStream::initializeFromDescription(const std::string& description,
+                                             const std::string& srcParameters,
                                              Kind kind) {
-  initializeSinkAndSource(kind);
+  std::string sourceName = kind == kVideo ? "buffer" : "abuffer";
+  std::string sinkName = kind == kVideo ? "buffersink" : "abuffersink";
 
   if (!description.empty()) {
+    createBufferSource(sourceName, "in", srcParameters);
+    createBufferSink(sinkName, "out");
     AVFilterInOut* outputs = avfilter_inout_alloc();
     AVFilterInOut* inputs = avfilter_inout_alloc();
     outputs->name = av_strdup("in");
@@ -147,7 +149,7 @@ bool FilterStream::initializeFromDescription(const std::string& description,
         mSpFilterGraph.get(), description.c_str(), &inputs, &outputs, nullptr);
 
     if (ret < 0) {
-      LOGE("Could not initialize graph from description '%s' by error '%s'",
+      LOGE("Could not initialize graph from description '%s' by error '%s'\n",
            description.c_str(), Utils::avErrorToString(AVERROR(ret)).c_str());
     }
 
