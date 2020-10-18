@@ -66,7 +66,7 @@ std::vector<std::string> StringUtils::split(
   std::vector<std::string> result;
   std::string temp;
 
-  while (std::getline(input, temp, (char)delimeter)) {
+  while (std::getline(input, temp, static_cast<char>(delimeter))) {
     result.emplace_back(temp);
   }
 

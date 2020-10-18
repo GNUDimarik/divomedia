@@ -48,6 +48,8 @@ __END_DECLS
 #include <utility>
 #include <vector>
 
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
+
 namespace divomedia {
 
 enum CodecKind : std::uint8_t { kDecoder, kEncoder };

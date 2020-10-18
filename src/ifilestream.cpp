@@ -109,7 +109,7 @@ unsigned int IFileStream::streamsNumber() const {
 AVStream* IFileStream::stream(unsigned int index) const {
   if (isOpen()) {
     if (mSpFormatCtx) {
-      if (index >= 0 && index < mSpFormatCtx->nb_streams) {
+      if (index < mSpFormatCtx->nb_streams) {
         return mSpFormatCtx->streams[index];
       } else {
         LOGE("index %u out of range\n", index);

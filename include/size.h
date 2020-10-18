@@ -49,6 +49,9 @@ class Size {
   Size_t mWidth;
   Size_t mHeight;
 };
+
+// TODO
+typedef Size<int> Size_t;
 }  // namespace divomedia
 
 #endif  // SIZE_H

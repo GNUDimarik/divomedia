@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-#include <config.h>
+#include <divomedia.h>
 
 __BEGIN_DECLS
 #ifndef DIVO_MEDIA_NO_AVDEVICE

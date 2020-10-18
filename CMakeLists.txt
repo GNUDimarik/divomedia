@@ -4,7 +4,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(divomedia)
 set (DIVOMEDIA_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/include")
-set (CMAKE_CXX_FLAGS "-D__STDC_CONSTANT_MACROS -fPIC -Wall -Werror")
+set (CMAKE_CXX_FLAGS "-D__STDC_CONSTANT_MACROS -fPIC -pedantic -Wall -Wextra -Wcast-align -Wcast-qual  -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Werror -Wno-unused")
 set(ENABLE_TESTS true)
 
 add_library(${PROJECT_NAME}
@@ -23,6 +23,7 @@ add_library(${PROJECT_NAME}
   "src/buffersource.cpp"
   "src/buffersink.cpp"
   "src/frame.cpp"
+  "src/image.cpp"
   "include/pixelformat.h"
   "include/size.h"
   "include/divomedia.h"
@@ -34,6 +35,8 @@ add_library(${PROJECT_NAME}
   "include/filter.h"
   "include/filtergraph.h"
   "include/frame.h"
+  "include/image.h"
+  "include/config.h"
   "include/buffersource.h"
   "include/buffersink.h"
   "include/utils/deleter.h"
